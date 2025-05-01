@@ -2,36 +2,60 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>2画面動画プレイヤー</title>
+  <title>ローカル動画を横に2つ表示</title>
   <style>
-    body { text-align: center; font-family: sans-serif; }
-    video { width: 45%; margin: 1%; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    input {
+      margin-bottom: 20px;
+    }
+    .video-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    video {
+      width: 45%;
+      border: 2px solid #444;
+    }
   </style>
 </head>
 <body>
-  <h1>2画面で同じ動画を再生</h1>
-  <video id="left" controls>
-    <source src="your-video.mp4" type="video/mp4">
-    対応していないブラウザです。
-  </video>
-  <video id="right" controls>
-    <source src="your-video.mp4" type="video/mp4">
-    対応していないブラウザです。
-  </video>
+  <h1>ローカル動画を2画面で再生</h1>
+  <input type="file" id="fileInput" accept="video/*">
+
+  <div class="video-container">
+    <video id="video1" controls></video>
+    <video id="video2" controls></video>
+  </div>
 
   <script>
-    // 同時再生機能
-    const v1 = document.getElementById('left');
-    const v2 = document.getElementById('right');
+    const fileInput = document.getElementById('fileInput');
+    const video1 = document.getElementById('video1');
+    const video2 = document.getElementById('video2');
 
-    v1.onplay = () => v2.play();
-    v1.onpause = () => v2.pause();
-    v1.onseeking = () => { v2.currentTime = v1.currentTime; };
-    v1.ontimeupdate = () => {
-      if (Math.abs(v1.currentTime - v2.currentTime) > 0.3) {
-        v2.currentTime = v1.currentTime;
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        video1.src = url;
+        video2.src = url;
+
+        // 同期再生処理（片方を操作するともう片方も動く）
+        video1.onplay = () => video2.play();
+        video1.onpause = () => video2.pause();
+        video1.onseeking = () => video2.currentTime = video1.currentTime;
+        video1.ontimeupdate = () => {
+          if (Math.abs(video1.currentTime - video2.currentTime) > 0.3) {
+            video2.currentTime = video1.currentTime;
+          }
+        };
       }
-    };
+    });
   </script>
 </body>
 </html>
